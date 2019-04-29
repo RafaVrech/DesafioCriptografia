@@ -1,0 +1,79 @@
+<html>
+	<head>
+		<script type="text/javascript" src="jquery-3.4.0.min.js"></script>
+
+		<style type="text/css">
+			body{
+				padding:8px;
+				border:1px solid blue;
+				margin-bottom:8px;
+			}
+		</style>
+
+	</head>
+	<body>
+	  <h1>Desafio Criptografia</h1>
+
+	  <p id="cifrado">.</p>
+	  
+	  <p>
+		  <button id="getCifrado">Obter Cifrado</button>
+	  </p>
+
+	  <p id="decifrado">.</p>
+		  
+	</body>
+	<script type="text/javascript">
+		function getCifrado() {
+			var codeNationAPI = "https://api.codenation.dev/v1/challenge/dev-ps/generate-data";
+			var parametros = { "token":"96c9927cdd19e0d5e0fb245c34c228d543b734ab" };
+			
+			$.getJSON( codeNationAPI, parametros)
+			.done(function( data ) {
+				$("#cifrado").text(JSON.stringify(data));
+				
+				console.log(decifrar(data.numero_casas, data.cifrado));
+			})
+			.fail(function() {
+				console.log( "errrrouuu" );
+			});
+		}
+		
+		$("#getCifrado").click(function () {
+			getCifrado();		
+		});
+		
+		function decifrar(offset, cifra){
+			var decifrado = "", posicaoASCII;
+			
+			for (var i = 0; i < cifra.length; i++) {
+				posicaoCifrada = cifra.charCodeAt(i);
+				posicaoOffset = cifra.charCodeAt(i) - (offset - 1) ;
+				
+				if(posicaoCifrada < "a".charCodeAt(0) && posicaoCifrada > "z".charCodeAt(0)){
+					decifrado += cifra[i];
+					console.log("pos: " + posicaoCifrada + "; deslocada: " + (posicaoCifrada));
+					continue;
+				}
+				
+				if(posicaoOffset < "a".charCodeAt(0)){
+					decifrado += String.fromCharCode("z".charCodeAt(0) - ("a".charCodeAt(0) - posicaoOffset));
+					console.log("pos: " + posicaoCifrada + "; deslocada: " + ("z".charCodeAt(0) - ("a".charCodeAt(0) - posicaoOffset)));
+					continue;
+				}
+					
+				if(posicaoOffset > "z".charCodeAt(0)){
+					decifrado += String.fromCharCode("a".charCodeAt(0) + (posicaoOffset - "z".charCodeAt(0)));
+					console.log("pos: " + posicaoCifrada + "; deslocada: " + ("a".charCodeAt(0) + (posicaoOffset - "z".charCodeAt(0))));
+					continue;
+				}
+				
+				console.log("pos: " + posicaoCifrada + "; deslocada: " + (posicaoOffset));
+				decifrado += String.fromCharCode(posicaoOffset);
+				
+			}
+			return decifrado;
+		}
+		
+	</script>
+</html>
