@@ -44,33 +44,26 @@
 		});
 		
 		function decifrar(offset, cifra){
-			var decifrado = "", posicaoASCII;
-			
+			var decifrado = "", posicaoCifrada, posicaoOffset, posicaoDecifrada;
+			cifra = cifra.toLowerCase();
 			for (var i = 0; i < cifra.length; i++) {
 				posicaoCifrada = cifra.charCodeAt(i);
-				posicaoOffset = cifra.charCodeAt(i) - (offset - 1) ;
+				posicaoOffset = cifra.charCodeAt(i) - offset;
 				
-				if(posicaoCifrada < "a".charCodeAt(0) && posicaoCifrada > "z".charCodeAt(0)){
-					decifrado += cifra[i];
-					console.log("pos: " + posicaoCifrada + "; deslocada: " + (posicaoCifrada));
-					continue;
+				if(posicaoCifrada < "a".charCodeAt(0) || posicaoCifrada > "z".charCodeAt(0)){
+					posicaoDecifrada = posicaoCifrada;
 				}
-				
-				if(posicaoOffset < "a".charCodeAt(0)){
-					decifrado += String.fromCharCode("z".charCodeAt(0) - ("a".charCodeAt(0) - posicaoOffset));
-					console.log("pos: " + posicaoCifrada + "; deslocada: " + ("z".charCodeAt(0) - ("a".charCodeAt(0) - posicaoOffset)));
-					continue;
+				else if(posicaoOffset < "a".charCodeAt(0)) {
+					posicaoDecifrada = "z".charCodeAt(0) - ("a".charCodeAt(0) - posicaoOffset - 1);
 				}
-					
-				if(posicaoOffset > "z".charCodeAt(0)){
-					decifrado += String.fromCharCode("a".charCodeAt(0) + (posicaoOffset - "z".charCodeAt(0)));
-					console.log("pos: " + posicaoCifrada + "; deslocada: " + ("a".charCodeAt(0) + (posicaoOffset - "z".charCodeAt(0))));
-					continue;
+				else if(posicaoOffset > "z".charCodeAt(0)){
+					posicaoDecifrada = "a".charCodeAt(0) + (posicaoOffset - "z".charCodeAt(0));
 				}
-				
-				console.log("pos: " + posicaoCifrada + "; deslocada: " + (posicaoOffset));
-				decifrado += String.fromCharCode(posicaoOffset);
-				
+				else
+				{
+					posicaoDecifrada = posicaoOffset;
+				}
+				decifrado += String.fromCharCode(posicaoDecifrada);
 			}
 			return decifrado;
 		}
