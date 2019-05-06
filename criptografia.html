@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<script type="text/javascript" src="jquery-3.4.0.min.js"></script>
+		<script type="text/javascript" src="sha1.min.js"></script>
 
 		<style type="text/css">
 			body{
@@ -8,41 +9,99 @@
 				border:1px solid blue;
 				margin-bottom:8px;
 			}
+			header{
+				text-align: center;
+			}
+			p, pre{
+				margin: 2em;
+			}
+			label{
+				font-weight: bold;
+			}
 		</style>
 
 	</head>
 	<body>
-	  <h1>Desafio Criptografia</h1>
+		<header>
+			<h1>Desafio Criptografia</h1>
 
-	  <p id="cifrado">.</p>
-	  
-	  <p>
-		  <button id="getCifrado">Obter Cifrado</button>
-	  </p>
+			<p>
+				<button id="btnDecifrar">Run</button>
+			</p>
+		</header>
 
-	  <p id="decifrado">.</p>
+		<label>Mensagem recebida:</label>
+		<pre id="mensagemRecebida">...</pre>
+
+		<label>Texto cifrado:</label>
+		<p id="cifrado">...</p>
+		
+		<label>Texto decifrado:</label>
+		<p id="decifrado">...</p>
+
+		<label>Mensagem enviada:</label>
+		<pre id="mensagemEnviada">...</pre>
+		
+		<label>Retorno:</label>
+		<pre id="retorno">...</pre>
 		  
 	</body>
 	<script type="text/javascript">
+		
+		//Evento de click do botão de buscar e descriptografar a mensagem
+		$("#btnDecifrar").click(function () {
+			getCifrado();//TODO nome		
+		});
+		
+		//Busca a mensagem e descriptografa ....
 		function getCifrado() {
 			var codeNationAPI = "https://api.codenation.dev/v1/challenge/dev-ps/generate-data";
 			var parametros = { "token":"96c9927cdd19e0d5e0fb245c34c228d543b734ab" };
 			
 			$.getJSON( codeNationAPI, parametros)
-			.done(function( data ) {
-				$("#cifrado").text(JSON.stringify(data));
+			.done(function( respostaGET ) {
+				$("#mensagemRecebida").text(JSON.stringify(respostaGET, null, 2));
+				$("#cifrado").text(respostaGET.cifrado);
 				
-				console.log(decifrar(data.numero_casas, data.cifrado));
+				var textoDecifrado = decifrar(respostaGET.numero_casas, respostaGET.cifrado);
+				$("#decifrado").text(textoDecifrado);
+				
+				respostaGET.decifrado = textoDecifrado;
+				respostaGET.resumo_criptografico = sha1(textoDecifrado);
+				
+				var formData = new FormData();
+				
+				var arquivo = new Blob([JSON.stringify(respostaGET)], {type: "text/plain"});
+	
+				formData.append("answer", arquivo);
+				for (var pair of formData.entries()) {
+					console.log(pair[0]+ ', ' + pair[1]); 
+				}
+				
+				mandaResposta(formData);
+				$("#mensagemEnviada").text(JSON.stringify(respostaGET, null, 2));
 			})
 			.fail(function() {
-				console.log( "errrrouuu" );
+				console.log( "errrrouuu no GET" );
 			});
 		}
 		
-		$("#getCifrado").click(function () {
-			getCifrado();		
-		});
+		function mandaResposta(formData) {
+			var codeNationAPI = "https://api.codenation.dev/v1/challenge/dev-ps/submit-solution?token=96c9927cdd19e0d5e0fb245c34c228d543b734ab";
+			$.ajax({
+				method: 'POST',
+				url: codeNationAPI,
+				cache: false,
+				contentType: "multipart/form-data",
+				processData: false,
+				data: formData,
+				success: function(respostaPOST) { 
+					$("#retorno").text(JSON.stringify(respostaPOST, null, 2)); 
+				}
+			});
+		}
 		
+		//Recebe a quantidade de casas que foram usadas para criptografar e a string criptografada e retorna descriptografado
 		function decifrar(offset, cifra){
 			var decifrado = "", posicaoCifrada, posicaoOffset, posicaoDecifrada;
 			cifra = cifra.toLowerCase();
@@ -50,19 +109,16 @@
 				posicaoCifrada = cifra.charCodeAt(i);
 				posicaoOffset = cifra.charCodeAt(i) - offset;
 				
-				if(posicaoCifrada < "a".charCodeAt(0) || posicaoCifrada > "z".charCodeAt(0)){
+				//Se não for letra: nâo decifrar
+				if(posicaoCifrada < "a".charCodeAt(0) || posicaoCifrada > "z".charCodeAt(0))
 					posicaoDecifrada = posicaoCifrada;
-				}
-				else if(posicaoOffset < "a".charCodeAt(0)) {
+				//Se precisar dar a volta além do A e ir para o Z
+				else if(posicaoOffset < "a".charCodeAt(0))
 					posicaoDecifrada = "z".charCodeAt(0) - ("a".charCodeAt(0) - posicaoOffset - 1);
-				}
-				else if(posicaoOffset > "z".charCodeAt(0)){
-					posicaoDecifrada = "a".charCodeAt(0) + (posicaoOffset - "z".charCodeAt(0));
-				}
+				//Se não precisou dar a volta até o Z
 				else
-				{
 					posicaoDecifrada = posicaoOffset;
-				}
+					
 				decifrado += String.fromCharCode(posicaoDecifrada);
 			}
 			return decifrado;
