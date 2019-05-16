@@ -61,6 +61,7 @@
 			$.getJSON( codeNationAPI, parametros)
 			.done(function( respostaGET ) {
 				$("#mensagemRecebida").text(JSON.stringify(respostaGET, null, 2));
+				
 				$("#cifrado").text(respostaGET.cifrado);
 				
 				var textoDecifrado = decifrar(respostaGET.numero_casas, respostaGET.cifrado);
@@ -70,15 +71,11 @@
 				respostaGET.resumo_criptografico = sha1(textoDecifrado);
 				
 				var formData = new FormData();
-				
 				var arquivo = new Blob([JSON.stringify(respostaGET)], {type: "text/plain"});
-	
-				formData.append("answer", arquivo);
-				for (var pair of formData.entries()) {
-					console.log(pair[0]+ ', ' + pair[1]); 
-				}
+				formData.append("answer", arquivo, "answer.json");
 				
 				mandaResposta(formData);
+				
 				$("#mensagemEnviada").text(JSON.stringify(respostaGET, null, 2));
 			})
 			.fail(function() {
@@ -92,11 +89,14 @@
 				method: 'POST',
 				url: codeNationAPI,
 				cache: false,
-				contentType: "multipart/form-data",
+				contentType: false,
 				processData: false,
 				data: formData,
 				success: function(respostaPOST) { 
 					$("#retorno").text(JSON.stringify(respostaPOST, null, 2)); 
+				},
+				error: function(xhr, status, error) {
+					console.log( "errrrouuu no POST" );
 				}
 			});
 		}
